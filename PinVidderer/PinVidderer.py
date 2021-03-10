@@ -31,17 +31,17 @@ def cli(config, loglevel):
     config.loglevel = loglevel
 
 
-@cli.command(help="Start watching Pinboard.")
+@cli.command(help="Setup PinVidderer.")
 @pass_config
 def setup(config):
-    """ Monitor for added and removed USB devices """
+    """Setup PinVidderer."""
     config.client = Client(loglevel=config.loglevel, is_setup=True)
 
 
 @cli.command(help="Start watching Pinboard.")
 @pass_config
 def start(config):
-    """ Monitor for added and removed USB devices """
+    """Start watching Pinboard."""
     config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.start()
@@ -51,7 +51,7 @@ def start(config):
 @pass_config
 @click.argument("url", nargs=1)
 def runonce(config, url):
-    """ Downloads a single video from <URL>."""
+    """Downloads a single video from <URL>."""
     config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.runonce(url)

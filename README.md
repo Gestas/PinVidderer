@@ -25,6 +25,7 @@ Optionally downloads a thumbnail and creates a .nfo file.
 Pipx will create the required virtualenv and ensure that `PinVidderer` is in your path. 
 ```
 $ pipx install git+https://github.com/Gestas/PinVidderer
+$ PinVidderer setup
 ```
 ### Usage -
 ```
@@ -44,6 +45,7 @@ Commands:
   get-history          Get the history.
   remove-from-history  Delete an event from the history.
   runonce              Run once for a single URL.
+  setup                Setup PinVidderer.
   start                Start watching Pinboard.
   status               Get the current status and recent history.
 ```

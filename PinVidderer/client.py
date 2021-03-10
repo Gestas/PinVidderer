@@ -70,7 +70,7 @@ class Client:
         )
         print(f' $ export "PINBOARD_TOKEN"="<your:token>"')
         print(
-            f"\nUpdate the sample configuration file and run `$ PinVidderer start` to start."
+            f"\nUpdate the sample configuration file and run `$ PinVidderer start` to start.\n"
         )
         utils.exiter(0)
 

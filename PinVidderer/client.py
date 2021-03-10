@@ -9,6 +9,7 @@ from .history import History
 from .pinboard import Pinboard
 from .utils import DateTimeFormatter, INIConfiguration, Utils
 from .video import Video
+from . import get_abs_path
 
 utils = Utils
 dtf = DateTimeFormatter
@@ -17,13 +18,18 @@ logger = logging.getLogger(__name__)
 
 
 class Client:
-    def __init__(self, loglevel):
+    def __init__(self, loglevel, is_setup=False):
         """Load the config and run."""
+        self.is_setup = is_setup
+        self.created_config_file = False
         config_file = "config.ini"
         config_dir = Path(utils.expand_path("~/.pinvidderer"))
+        self.config_path = config_dir.joinpath(config_file)
         self.configuration = self.get_config(
             config_dir=config_dir, config_file=config_file
         )
+        if self.created_config_file or is_setup:
+            self.setup()
         loglevel = loglevel or self.configuration.get("dev", {})["log_level"]
         self._setup_logging(loglevel)
         self.pinboard = None
@@ -42,14 +48,40 @@ class Client:
             )
         self.watcher()
 
+    def setup(self):
+        print(
+            f"A sample configuration file has been copied to {str(self.config_path)}\n"
+        )
+        print(
+            f'Current Download Path: {str(self.configuration.get("pinvidderer", {}).get("download_path"))}'
+        )
+        print(
+            f'Pinboard Tag To Use: {str(self.configuration.get("pinvidderer", {}).get("source_tag"))}'
+        )
+        print(
+            f'Remove Tag After Download: {str(self.configuration.get("pinvidderer", {}).get("remove_tag"))}'
+        )
+        print(
+            f'Delete Bookmark after Download: {str(self.configuration.get("pinvidderer", {}).get("delete_bookmark"))}'
+        )
+        print(
+            f"The Pinboard API token (https://pinboard.in/settings/password) "
+            f"can be added to the config file or exported as an environment variable."
+        )
+        print(f' $ export "PINBOARD_TOKEN"="<your:token>"')
+        print(
+            f"\nUpdate the sample configuration file and run `$ PinVidderer start` to start."
+        )
+        utils.exiter(0)
+
     def runonce(self, url):
         # Mock a bookmark and run
-        mock_bookmark = {"href": url, "description": "None (run once)"}
+        mock_bookmark = {"href": url, "description": "Run Once"}
         video = Video(configuration=self.configuration)
         video.preflight(mock_bookmark)
 
     def status(self):
-        pass
+        utils.exiter(0, message="TODO")
 
     def get_history(self, human, failed):
         self.history.print(human, failed)
@@ -91,8 +123,7 @@ class Client:
             )
             time.sleep(int(poll_interval))
 
-    @staticmethod
-    def get_config(config_dir, config_file):
+    def get_config(self, config_dir, config_file):
         """Get the user configuration from disk and environment.
         :param config_dir: Path to the configuration directory
         :type config_dir: Path
@@ -104,10 +135,17 @@ class Client:
         config_dir.mkdir(exist_ok=True)
         config_path = config_dir.joinpath(config_file)
         if not config_path.exists():
-            config_template = Path("./errata/config.ini").expanduser()
+            config_template = "errata/config.ini"
+            config_template = get_abs_path(config_template)
             config_path.write_bytes(config_template.read_bytes())
+            self.created_config_file = True
         ini = INIConfiguration(config_path=config_path, normalize=True)
         config = ini.get()
+        download_path = config.get("pinvidderer", {}).get("download_path")
+        download_path = utils.expand_path(download_path)
+        config["pinvidderer"]["download_path"] = download_path
+        if self.created_config_file or self.is_setup:
+            return config
         token = config.get("auth", {}).get("pinboard_token") or os.getenv(
             "PINBOARD_TOKEN"
         )
@@ -118,9 +156,6 @@ class Client:
                 "environment variable or in the config.ini file.",
             )
         config["auth"]["pinboard_token"] = token
-        download_path = config.get("pinvidderer", {}).get("download_path")
-        download_path = utils.expand_path(download_path)
-        config["pinvidderer"]["download_path"] = download_path
         return config
 
     @staticmethod

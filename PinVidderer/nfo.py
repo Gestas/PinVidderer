@@ -1,6 +1,7 @@
 """NFO file utilities."""
 import logging
 import re
+
 # Thanks to JGoutin @ https://github.com/JGoutin/movie_nfo_generator/blob/master/movie_nfo_generator/nfo.py
 from pathlib import Path
 

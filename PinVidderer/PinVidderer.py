@@ -29,13 +29,20 @@ def cli(config, loglevel):
     """A Bookmarked Video Downloader."""
     signal.signal(signal.SIGINT, utils.signal_handler)
     config.loglevel = loglevel
-    config.client = Client(loglevel)
+
+
+@cli.command(help="Start watching Pinboard.")
+@pass_config
+def setup(config):
+    """ Monitor for added and removed USB devices """
+    config.client = Client(loglevel=config.loglevel, is_setup=True)
 
 
 @cli.command(help="Start watching Pinboard.")
 @pass_config
 def start(config):
     """ Monitor for added and removed USB devices """
+    config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.start()
 
@@ -45,6 +52,7 @@ def start(config):
 @click.argument("url", nargs=1)
 def runonce(config, url):
     """ Downloads a single video from <URL>."""
+    config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.runonce(url)
 
@@ -53,6 +61,7 @@ def runonce(config, url):
 @pass_config
 def status(config):
     """Get the current status and recent history."""
+    config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.status()
 
@@ -63,6 +72,7 @@ def status(config):
 @pass_config
 def get_history(config, human, failed_only):
     """View the history."""
+    config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.get_history(human, failed_only)
 
@@ -73,6 +83,7 @@ def get_history(config, human, failed_only):
 @pass_config
 def remove_from_history(config, url, all_):
     """Remove the event for <URL> from the history."""
+    config.client = Client(loglevel=config.loglevel)
     client = config.client
     client.remove_from_history(url, all_)
 

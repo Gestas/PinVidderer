@@ -6,6 +6,7 @@ from PinVidderer.do_http import DoHTTP
 from .utils import DateTimeFormatter
 
 logger = logging.getLogger(__name__)
+dtf = DateTimeFormatter()
 
 
 class Pinboard:
@@ -118,5 +119,5 @@ class Pinboard:
         _params = {"format": "json"}
         _response = self.do_http.request(path=_path, params=_params, do_raise=False)
         _json = _response.json()
-        _dtf = DateTimeFormatter(dt=_json["update_time"])
-        return _dtf.epoch
+        return dtf.epoch(_json["update_time"])
+

@@ -7,6 +7,7 @@ from .client import Client
 from .utils import Utils
 
 utils = Utils()
+signal.signal(signal.SIGINT, utils.signal_handler)
 
 
 class Config(object):
@@ -22,12 +23,13 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
     "--loglevel",
     default=None,
     type=click.Choice(["ERROR", "WARNING", "INFO", "DEBUG", "CRITICAL"]),
-    help="Sets the logging level, overriding the value in config.ini",
+    help="Sets the logging level, overriding the value in config.ini. If a loglevel is set here messages will be sent "
+         "to the console as well as the log file.",
 )
 @pass_config
 def cli(config, loglevel):
     """A Bookmarked Video Downloader."""
-    signal.signal(signal.SIGINT, utils.signal_handler)
+    # signal.signal(signal.SIGINT, utils.signal_handler)
     config.loglevel = loglevel
 
 

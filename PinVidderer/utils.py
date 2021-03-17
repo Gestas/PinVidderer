@@ -114,74 +114,79 @@ class Utils:
 class DateTimeFormatter:
     """One datetime formatter to rule them all."""
 
-    def __init__(self, dt):
-        self.usa = None
-        self.tz_dt = None
-        self.world = None
-        self.epoch = None
-        self.usa_24 = None
-        self.world_24 = None
-        self.iso8601 = None
-        self.rfc3339 = None
-        self.tz_date_time = None
-        self.utc_tz_dt = None
-        self.local_tz_dt = None
-        self.utc_tz_dt = None
-        self.format(dt)
+    def __init__(self):
+        self._usa_format_12 = "%m/%d/%Y %I:%M:%S"
+        self._usa_format_24 = "%m/%d/%Y %H:%M:%S"
+        self._global_format_12 = "%d/%m/%Y %H:%M:%S"
+        self._global_format_24 = "%d/%m/%Y %I:%M:%S"
 
-    def format(self, date_time=None):
-        """Formats the input date_time (or now()) into different strings.
-
-        :param date_time:  A datetime formatted as [epoch | RFC3339 | ISO8601].
-        Defaults to the current UTC datetime.
-        :type date_time: [datetime, str]
-        :return: A datetime
-        :rtype: str
-        """
-        usa_format = "%m/%d/%Y %I:%M:%S"
-        usa_format_24 = "%m/%d/%Y %H:%M:%S"
-        global_format = "%d/%m/%Y %H:%M:%S"
-        global_format_24 = "%d/%m/%Y %I:%M:%S"
-
-        if not date_time:
-            # Use current time
-            self.epoch = date_time.utcnow().timestamp()
-            self.iso8601 = date_time.isoformat(date_time.utcnow())
-            self.rfc3339 = rfc3339.rfc3339(date_time.utcnow())
-            self.usa = date_time.now().strftime(usa_format)
-            self.world = date_time.now().strftime(global_format)
-            self.usa_24 = date_time.now().strftime(usa_format_24)
-            self.world_24 = date_time.now().strftime(global_format_24)
-            return
+    def global12(self, dt=None):
+        if not dt:
+            return datetime.now().strftime(self._global_format_12)
         try:
-            # Use supplied time and timezone.
-            date_time = float(
-                date_time
-            )  # If this fails then date_time wasn't provided as an epoch
-            self.epoch = date_time
-            self.iso8601 = datetime.isoformat(datetime.fromtimestamp(float(date_time)))
-            self.rfc3339 = rfc3339.rfc3339(datetime.fromtimestamp(float(date_time)))
-            self.usa = datetime.fromtimestamp(float(date_time)).strftime(usa_format)
-            self.world = datetime.fromtimestamp(float(date_time)).strftime(
-                global_format
-            )
-            self.usa_24 = datetime.fromtimestamp(float(date_time)).strftime(
-                usa_format_24
-            )
-            self.world_24 = datetime.fromtimestamp(float(date_time)).strftime(
-                global_format_24
-            )
-            return
-        except ValueError:
-            self.iso8601 = iso8601.parse_date(date_time)
-            self.rfc3339 = rfc3339.rfc3339(self.iso8601)
-            self.epoch = self.iso8601.timestamp()
-            self.usa = self.iso8601.strftime(usa_format)
-            self.world = self.iso8601.strftime(global_format)
-            self.usa_24 = self.iso8601.strftime(usa_format_24)
-            self.world_24 = self.iso8601.strftime(global_format_24)
+            return datetime.fromtimestamp(float(dt)).strftime(self._global_format_12)
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return _i.strftime(self._global_format_12)
 
-    def utc_to_local(self, utc_dt: datetime):
+    def global24(self, dt=None):
+        if not dt:
+            return datetime.now().strftime(self._global_format_24)
+        try:
+            return datetime.fromtimestamp(float(dt)).strftime(self._global_format_24)
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return _i.strftime(self._global_format_24)
+
+    def usa12(self, dt=None):
+        if not dt:
+            return datetime.now().strftime(self._usa_format_12)
+        try:
+            return datetime.fromtimestamp(float(dt)).strftime(self._usa_format_12)
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return _i.strftime(self._usa_format_12)
+
+    def usa24(self, dt=None):
+        if not dt:
+            return datetime.now().strftime(self._usa_format_24)
+        try:
+            return datetime.fromtimestamp(float(dt)).strftime(self._usa_format_24)
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return _i.strftime(self._usa_format_24)
+
+    @staticmethod
+    def r3339(dt=None):
+        if not dt:
+            return rfc3339.rfc3339(datetime.utcnow())
+        try:
+            return rfc3339.rfc3339(datetime.fromtimestamp(float(dt)))
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return rfc3339.rfc3339(_i)
+
+    @staticmethod
+    def i8601(dt=None):
+        if not dt:
+            return datetime.isoformat(datetime.utcnow())
+        try:
+            return datetime.isoformat(datetime.fromtimestamp(float(dt)))
+        except (TypeError, ValueError):
+            return iso8601.parse_date(str(dt))
+
+    @staticmethod
+    def epoch(dt=None):
+        if not dt:
+            return datetime.now().timestamp()
+        try:
+            return float(dt)
+        except (TypeError, ValueError):
+            _i = iso8601.parse_date(str(dt))
+            return _i.timestamp()
+
+    @staticmethod
+    def utc_to_local(utc_dt: datetime):
         """Convert a UTC datetime to a local timezone aware datetime.
 
         :param utc_dt: Datetime using the UTC timezone
@@ -190,9 +195,10 @@ class DateTimeFormatter:
         :rtype: datetime
         """
         utc_dt = utc_dt.replace(tzinfo=tz.gettz("UTC"))
-        self.local_tz_dt = utc_dt.astimezone(tz.tzlocal())
+        return utc_dt.astimezone(tz.tzlocal())
 
-    def local_to_utc(self, local_dt):
+    @staticmethod
+    def local_to_utc(local_dt):
         """Convert a local datetime to a UTC timezone aware datetime.
 
         :param local_dt: Datetime using the local timezone
@@ -201,10 +207,11 @@ class DateTimeFormatter:
         :rtype: datetime
         """
         local_dt = local_dt.replace(tzinfo=tz.tzlocal())
-        self.utc_tz_dt = local_dt.astimezone(tz.tzlocal())
+        return local_dt.astimezone(tz.tzlocal())
 
-    def tz_to_tz(self, dt, source_tz, dest_tz):
-        """Covert a datetime from <timezone> to <timezone>.
+    @staticmethod
+    def tz_to_tz(dt, source_tz, dest_tz):
+        """Covert a datetime object from <timezone> to <timezone>.
 
         :param dt: A datetime
         :type dt: datetime
@@ -216,7 +223,7 @@ class DateTimeFormatter:
         :rtype: datetime
         """
         dt = dt.replace(tzinfo=tz.gettz(source_tz))
-        self.tz_dt = dt.replace(tzinfo=tz.gettz(dest_tz))
+        return dt.replace(tzinfo=tz.gettz(dest_tz))
 
 
 class PathDetails:
@@ -261,20 +268,18 @@ class PathDetails:
 
 
 class INIConfiguration:
-    def __init__(self, config_path, normalize=False, update=None):
+    def __init__(self, config_path, normalize=False):
         """Get or update an INI formatted configuration.
 
         :param config_path: Path to a INI formatted file.
         :type config_path: [Path, str]
-        :param update: An update to the configuration to be persisted to disk.
-        :type update: dict
         :param normalize: Capitalized keys are lowercased and spaces in keys are replaced with '_'.
         :type normalize: bool
         """
         self.config = {}
         _config_dict = {}
         self._config_path = Utils.expand_path(config_path)
-        self.update = update
+        self.update = None
         self.normalize = normalize
 
     def _format_keys(self, str_):

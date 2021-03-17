@@ -1,4 +1,6 @@
 """My generally generic requests wrapper."""
+# https://github.com/Gestas/Python-Snippets/
+# https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/
 
 import logging
 from urllib.parse import urljoin
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class DoHTTP:
-    """A HTTP request."""
+    """Do a HTTP request."""
 
     def __init__(self, method, endpoint, token):
         self._method = method
@@ -46,13 +48,14 @@ class DoHTTP:
         :type method: str
         :param kwargs: Any other valid `prepared request` parameters
         :type kwargs: dict
+
         :return: The response
         :rtype: requests.response
         """
+        _path = path
         _endpoint = endpoint or self._endpoint
         _method = method or self._method
         _token = token or self._token
-        _path = path
         _data = kwargs.get("data")
         _params = kwargs.get("params")
         _proxy = kwargs.get("proxy")

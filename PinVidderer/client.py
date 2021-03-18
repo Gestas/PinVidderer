@@ -50,7 +50,7 @@ class Client:
 
     def runonce(self, url):
         # Mock a bookmark and run
-        mock_bookmark = {"href": url, "description": "Run Once"}
+        mock_bookmark = {"href": url, "description": "-- Run Once --"}
         video = Video(configuration=self.configuration)
         video.preflight(mock_bookmark)
 
@@ -132,8 +132,7 @@ class Client:
         log_path = logs_dir.joinpath(self.configuration.get("dev", {})["log_filename"])
         rollover_required = log_path.exists()
         log_retention = int(self.configuration.get("dev", {})["log_retention"])
-        # file_formatter = logging.Formatter("{asctime}: {message}", style="{")
-        file_formatter = logging.Formatter("{dtf.r3339}: {message}", style="{")
+        file_formatter = logging.Formatter("{asctime}: {message}", datefmt="%d/%m/%Y %I:%M:%S", style="{")
         file = logging.handlers.RotatingFileHandler(filename=log_path, backupCount=log_retention)
         file.setFormatter(file_formatter)
         logger.addHandler(file)
